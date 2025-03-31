@@ -1,0 +1,42 @@
+{% extends 'users/base.html' %}
+
+{% block title %}My Interest Free Loans{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">My Interest Free Loans</h1>
+
+    <div class="card">
+        <div class="card-body">
+            {% for donation in donations %}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="mb-0">
+                            <a href="{% url 'post_detail' donation.post.pk %}" class="text-decoration-none">
+                                {{ donation.post.title }}
+                            </a>
+                        </h5>
+                        <p class="text-muted mb-0">${{ donation.amount }}</p>
+                        {% if donation.message %}
+                            <small class="text-muted">{{ donation.message }}</small>
+                        {% endif %}
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted">{{ donation.created_at|date:"F d, Y" }}</small>
+                        <p class="text-muted mb-0">to {{ donation.post.creator.username }}</p>
+                    </div>
+                </div>
+                {% if not forloop.last %}
+                    <hr>
+                {% endif %}
+            {% empty %}
+                <div class="text-center py-5">
+                    <h3>No Loans Yet</h3>
+                    <p>You haven't provided any interest free loans yet.</p>
+                    <a href="{% url 'post_list' %}" class="btn btn-primary">Browse Fundraising Posts</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

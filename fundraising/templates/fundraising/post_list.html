@@ -1,0 +1,69 @@
+{% extends 'users/base.html' %}
+
+{% block title %}Fundraising Posts{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Fundraising Posts</h1>
+        {% if user.is_authenticated %}
+            <a href="{% url 'create_post' %}" class="btn btn-primary">Create New Post</a>
+        {% endif %}
+    </div>
+
+    <div class="row">
+        {% for post in posts %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    {% if post.image %}
+                        <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.title }}" style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ post.title }}</h5>
+                        <p class="card-text text-truncate">{{ post.description }}</p>
+                        <div class="progress mb-2">
+                            <div class="progress-bar" role="progressbar" style="width: {{ post.progress_percentage }}%">
+                                {{ post.progress_percentage|floatformat:1 }}%
+                            </div>
+                        </div>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                ${{ post.current_amount }} raised of ${{ post.target_amount }}
+                            </small>
+                        </p>
+                        <a href="{% url 'post_detail' post.pk %}" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <p class="text-center">No fundraising posts available.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if posts.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if posts.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ posts.previous_page_number }}">Previous</a>
+                    </li>
+                {% endif %}
+
+                {% for num in posts.paginator.page_range %}
+                    <li class="page-item {% if posts.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endfor %}
+
+                {% if posts.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ posts.next_page_number }}">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+</div>
+{% endblock %} 
