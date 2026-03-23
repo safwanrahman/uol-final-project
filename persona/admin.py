@@ -19,7 +19,14 @@ class PersonaAdmin(admin.ModelAdmin):
 
 @admin.register(PersonaNamePart)
 class PersonaNamePartAdmin(admin.ModelAdmin):
-    list_display = ("part_id", "persona", "part_type", "value", "display_order", "locale")
+    list_display = (
+        "part_id",
+        "persona",
+        "part_type",
+        "value",
+        "display_order",
+        "locale",
+    )
     list_filter = ("part_type", "locale")
     search_fields = ("value",)
     ordering = ("persona", "display_order")

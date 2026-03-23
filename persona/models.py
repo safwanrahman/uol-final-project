@@ -1,16 +1,18 @@
 from django.db import models
+from django.conf import settings
 import uuid
+import binascii
+import os
 
 
 class User(models.Model):
     """
     Core user/account table, separate from Django's auth user.
     """
+
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     # Encrypted email bytes (e.g. output of an encryption library)
     email_enc = models.CharField(max_length=255)
-    # Store a password hash (e.g. Argon2/bcrypt) – never plain text
-    hashed_password = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -30,10 +32,25 @@ class Persona(models.Model):
         PRIVATE = "private", "Private"
         RESTRICTED = "restricted", "Restricted"
 
+    class PersonaType(models.TextChoices):
+        LEGAL = "legal", "Legal"
+        PROFESSIONAL = "professional", "Professional"
+        ANONYMOUS = "anonymous", "Anonymous"
+        GAMING = "gaming", "Gaming"
+        SOCIAL = "social", "Social"
+        OTHER = "other", "Other"
+
     persona_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="personas")
     label = models.CharField(max_length=100)
     is_default = models.BooleanField(default=False)
+    type = models.CharField(
+        max_length=30,
+        choices=PersonaType.choices,
+        default=PersonaType.OTHER,
+    )
+    username = models.CharField(max_length=150, blank=True, null=True)
+    website = models.URLField(max_length=200, blank=True, null=True)
     visibility_level = models.CharField(
         max_length=20,
         choices=VisibilityLevel.choices,
@@ -76,3 +93,28 @@ class PersonaNamePart(models.Model):
 
     def __str__(self) -> str:
         return f"{self.part_type}: {self.value}"
+
+
+class APIToken(models.Model):
+    key = models.CharField(max_length=40, primary_key=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name="api_tokens", on_delete=models.CASCADE
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    name = models.CharField(max_length=255, blank=True, null=True)
+    has_full_access = models.BooleanField(default=True)
+    allowed_personas = models.ManyToManyField(
+        "Persona", blank=True, related_name="api_tokens"
+    )
+
+    def save(self, *args, **kwargs):
+        if not self.key:
+            self.key = self.generate_key()
+        return super().save(*args, **kwargs)
+
+    @classmethod
+    def generate_key(cls):
+        return binascii.hexlify(os.urandom(20)).decode()
+
+    def __str__(self):
+        return f"{self.name or 'Token'} ({self.key[:6]}...)"

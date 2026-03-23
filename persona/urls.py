@@ -21,6 +21,16 @@ urlpatterns = [
         views.PersonaRetrieveUpdateDestroyAPIView.as_view(),
         name="persona-detail",
     ),
+    path(
+        "shared/<str:token>/",
+        views.SharedPersonaAPIView.as_view(),
+        name="shared-persona-api",
+    ),
+    path(
+        "identities/search/",
+        views.IdentityContextAPIView.as_view(),
+        name="identity-context-search",
+    ),
     # Persona name parts
     path(
         "me/personas/name-parts/",
@@ -33,6 +43,3 @@ urlpatterns = [
         name="name-part-detail",
     ),
 ]
-
-
-

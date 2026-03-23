@@ -5,6 +5,7 @@ from .models import User, Persona, PersonaNamePart
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, source="hashed_password")
+
     class Meta:
         model = User
         fields = ["user_id", "email_enc", "password", "created_at"]
@@ -35,10 +36,11 @@ class PersonaSerializer(serializers.ModelSerializer):
             "persona_id",
             "user",
             "label",
+            "type",
+            "username",
+            "website",
             "is_default",
             "visibility_level",
             "name_parts",
         ]
         read_only_fields = ["persona_id"]
-
-

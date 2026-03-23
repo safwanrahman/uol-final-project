@@ -9,52 +9,101 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Persona',
+            name="Persona",
             fields=[
-                ('persona_id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('label', models.CharField(max_length=100)),
-                ('is_default', models.BooleanField(default=False)),
-                ('visibility_level', models.CharField(choices=[('public', 'Public'), ('private', 'Private'), ('restricted', 'Restricted')], default='private', max_length=20)),
+                (
+                    "persona_id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("label", models.CharField(max_length=100)),
+                ("is_default", models.BooleanField(default=False)),
+                (
+                    "visibility_level",
+                    models.CharField(
+                        choices=[
+                            ("public", "Public"),
+                            ("private", "Private"),
+                            ("restricted", "Restricted"),
+                        ],
+                        default="private",
+                        max_length=20,
+                    ),
+                ),
             ],
             options={
-                'db_table': 'personas',
+                "db_table": "personas",
             },
         ),
         migrations.CreateModel(
-            name='User',
+            name="User",
             fields=[
-                ('user_id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('email_enc', models.BinaryField()),
-                ('hashed_password', models.CharField(max_length=255)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "user_id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("email_enc", models.BinaryField()),
+                ("hashed_password", models.CharField(max_length=255)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'db_table': 'users',
+                "db_table": "users",
             },
         ),
         migrations.CreateModel(
-            name='PersonaNamePart',
+            name="PersonaNamePart",
             fields=[
-                ('part_id', models.BigAutoField(primary_key=True, serialize=False)),
-                ('part_type', models.CharField(choices=[('given_name', 'Given name'), ('family_name', 'Family name'), ('patronymic', 'Patronymic'), ('title', 'Title'), ('nickname', 'Nickname')], max_length=20)),
-                ('value', models.CharField(max_length=255)),
-                ('display_order', models.PositiveIntegerField()),
-                ('locale', models.CharField(max_length=32)),
-                ('persona', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='name_parts', to='persona.persona')),
+                ("part_id", models.BigAutoField(primary_key=True, serialize=False)),
+                (
+                    "part_type",
+                    models.CharField(
+                        choices=[
+                            ("given_name", "Given name"),
+                            ("family_name", "Family name"),
+                            ("patronymic", "Patronymic"),
+                            ("title", "Title"),
+                            ("nickname", "Nickname"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                ("value", models.CharField(max_length=255)),
+                ("display_order", models.PositiveIntegerField()),
+                ("locale", models.CharField(max_length=32)),
+                (
+                    "persona",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="name_parts",
+                        to="persona.persona",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'persona_name_parts',
-                'ordering': ['persona_id', 'display_order'],
+                "db_table": "persona_name_parts",
+                "ordering": ["persona_id", "display_order"],
             },
         ),
         migrations.AddField(
-            model_name='persona',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='personas', to='persona.user'),
+            model_name="persona",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="personas",
+                to="persona.user",
+            ),
         ),
     ]

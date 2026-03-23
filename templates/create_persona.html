@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Create Persona - Identify{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <div class="auth-header">
+        <h2 class="auth-title">New Persona</h2>
+        <p class="auth-subtitle">Define a new identity representation</p>
+    </div>
+    
+    {% if form and form.errors %}
+    <div style="background: rgba(255, 0, 128, 0.1); border: 1px solid rgba(255, 0, 128, 0.3); color: #ff80bf; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center; font-size: 0.9rem;">
+        {% for field, errors in form.errors.items() %}
+            {{ field }}: {{ errors[0] }}<br>
+        {% endfor %}
+        {% if form.non_field_errors %}
+            {{ form.non_field_errors()[0] }}
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <form action="/persona/create" method="POST">
+        {{ csrf_input }}
+        
+        <div class="form-group">
+            <label class="form-label" for="label">Persona Label</label>
+            <input type="text" id="label" name="label" class="form-input" placeholder="e.g. Professional Gaming" required>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="type">Persona Type</label>
+            <select id="type" name="type" class="form-input">
+                <option value="legal">Legal</option>
+                <option value="professional">Professional</option>
+                <option value="anonymous">Anonymous</option>
+                <option value="gaming">Gaming</option>
+                <option value="social">Social</option>
+                <option value="other" selected>Other</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="username">Username (Optional)</label>
+            <input type="text" id="username" name="username" class="form-input" placeholder="e.g. gamer_tag_123">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="website">Website (Optional)</label>
+            <input type="url" id="website" name="website" class="form-input" placeholder="e.g. https://example.com">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label" for="visibility_level">Visibility Level</label>
+            <select id="visibility_level" name="visibility_level" class="form-input">
+                <option value="public">Public</option>
+                <option value="private" selected>Private</option>
+                <option value="restricted">Restricted</option>
+            </select>
+        </div>
+        
+        <div class="options-row" style="margin-top: 1.5rem;">
+            <label class="checkbox-label">
+                <input type="checkbox" name="is_default">
+                <span>Set as Default Persona</span>
+            </label>
+        </div>
+        
+        <hr style="border-color: var(--border-color); margin: 2rem 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="color: #fff; margin: 0; font-size: 1.1rem;">Name Details</h3>
+            <button type="button" id="add-part-btn" style="background: transparent; border: 1px solid #7928CA; color: #e5a5ff; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">+ Add Part</button>
+        </div>
+
+        <div id="name-parts-container">
+            <div class="name-part-group" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h4 style="margin: 0; color: #fff; font-size: 0.95rem;">Name Part</h4>
+                    <button type="button" class="remove-part-btn" style="background: transparent; border: none; color: #ff4d4f; cursor: pointer; font-size: 0.85rem; display: none;">Remove</button>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Name Part Type</label>
+                    <select name="part_type[]" class="form-input" required>
+                        <option value="given_name" selected>Given name</option>
+                        <option value="family_name">Family name</option>
+                        <option value="patronymic">Patronymic</option>
+                        <option value="title">Title</option>
+                        <option value="nickname">Nickname</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Name Value</label>
+                    <input type="text" name="part_value[]" class="form-input" placeholder="e.g. John" required>
+                </div>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">Display Order</label>
+                        <input type="number" name="display_order[]" class="form-input" value="1" min="1" required>
+                    </div>
+                    
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">Locale</label>
+                        <input type="text" name="locale[]" class="form-input" value="en-US" placeholder="e.g. en-US" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn-submit" style="margin-top: 1.5rem;">Create Persona</button>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('name-parts-container');
+    const addBtn = document.getElementById('add-part-btn');
+    
+    // Function to update remove buttons visibility
+    const updateRemoveButtons = () => {
+        const groups = container.querySelectorAll('.name-part-group');
+        groups.forEach((group, index) => {
+            const removeBtn = group.querySelector('.remove-part-btn');
+            removeBtn.style.display = groups.length > 1 ? 'block' : 'none';
+        });
+    };
+
+    // Add new part
+    addBtn.addEventListener('click', () => {
+        const firstGroup = container.querySelector('.name-part-group');
+        const clone = firstGroup.cloneNode(true);
+        
+        // Clear input values
+        clone.querySelectorAll('input[type="text"]').forEach(input => input.value = input.name === 'locale[]' ? 'en-US' : '');
+        clone.querySelector('input[type="number"]').value = container.querySelectorAll('.name-part-group').length + 1;
+        clone.querySelector('select').selectedIndex = 0;
+        
+        container.appendChild(clone);
+        updateRemoveButtons();
+    });
+
+    // Remove part
+    container.addEventListener('click', (e) => {
+        if (e.target.classList.contains('remove-part-btn')) {
+            e.target.closest('.name-part-group').remove();
+            updateRemoveButtons();
+        }
+    });
+});
+</script>
+{% endblock %}
